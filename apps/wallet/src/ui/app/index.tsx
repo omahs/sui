@@ -61,7 +61,6 @@ const App = () => {
         dispatch(setNavVisibility(menuVisible));
     }, [location, dispatch]);
     const stakingEnabled = useFeature(FEATURES.STAKING_ENABLED).on;
-
     return (
         <Routes>
             <Route path="/*" element={<HomePage />}>

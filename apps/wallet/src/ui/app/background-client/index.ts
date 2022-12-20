@@ -4,6 +4,8 @@
 import { Base64DataBuffer, pubKeyFromSerialized } from '@mysten/sui.js';
 import { lastValueFrom, map, take } from 'rxjs';
 
+import { accountsStore } from '../hooks/useAccounts';
+import { activeAddressStore } from '../hooks/useActiveAddress';
 import { createMessage } from '_messages';
 import { PortStream } from '_messaging/PortStream';
 import { isKeyringPayload } from '_payloads/keyring';
@@ -139,7 +141,7 @@ export class BackgroundClient {
                 createMessage<KeyringPayload<'unlock'>>({
                     type: 'keyring',
                     method: 'unlock',
-                    args: { password: password },
+                    args: { password },
                     return: undefined,
                 })
             ).pipe(take(1))
@@ -291,6 +293,8 @@ export class BackgroundClient {
             payload.return
         ) {
             action = setKeyringStatus(payload.return);
+            activeAddressStore.setValue(payload.return.activeAddress);
+            accountsStore.setValue(payload.return.accounts);
         }
         if (action) {
             this._dispatch(action);
