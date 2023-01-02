@@ -37,6 +37,7 @@ use crate::base_types::{AuthorityName, SuiAddress};
 use crate::committee::{Committee, EpochId, StakeUnit};
 use crate::error::{SuiError, SuiResult};
 use crate::intent::IntentMessage;
+use crate::multisig::CompressedSignature;
 use crate::sui_serde::{AggrAuthSignature, Readable, SuiBitmap};
 use fastcrypto::encoding::{Base64, Encoding, Hex};
 use fastcrypto::hash::{HashFunction, Sha3_256};
@@ -99,10 +100,13 @@ pub enum SuiKeyPair {
     Secp256r1(Secp256r1KeyPair),
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, From)]
+#[derive(Debug, Clone, PartialEq, Eq, From, JsonSchema)]
 pub enum PublicKey {
+    #[schemars(with = "Base64")]
     Ed25519(Ed25519PublicKey),
+    #[schemars(with = "Base64")]
     Secp256k1(Secp256k1PublicKey),
+    #[schemars(with = "Base64")]
     Secp256r1(Secp256r1PublicKey),
 }
 
@@ -706,6 +710,40 @@ impl Signature {
         T: Serialize,
     {
         secret.sign(&bcs::to_bytes(&value).expect("Message serialization should not fail"))
+    }
+
+    pub fn to_compressed(&self) -> CompressedSignature {
+        let bytes = self.signature_bytes();
+        match self.scheme() {
+            SignatureScheme::ED25519 => {
+                CompressedSignature::Ed25519(Ed25519Signature::from_bytes(bytes).unwrap())
+            }
+            SignatureScheme::Secp256k1 => {
+                CompressedSignature::Secp256k1(Secp256k1Signature::from_bytes(bytes).unwrap())
+            }
+            SignatureScheme::Secp256r1 => {
+                CompressedSignature::Secp256r1(Secp256r1Signature::from_bytes(bytes).unwrap())
+            }
+            SignatureScheme::BLS12381 => {
+                CompressedSignature::BLS12381(BLS12381Signature::from_bytes(bytes).unwrap())
+            }
+        }
+    }
+
+    pub fn to_public_key(&self) -> PublicKey {
+        let bytes = self.public_key_bytes();
+        match self.scheme() {
+            SignatureScheme::ED25519 => {
+                PublicKey::Ed25519(Ed25519PublicKey::from_bytes(bytes).unwrap())
+            }
+            SignatureScheme::Secp256k1 => {
+                PublicKey::Secp256k1(Secp256k1PublicKey::from_bytes(bytes).unwrap())
+            }
+            SignatureScheme::Secp256r1 => {
+                PublicKey::Secp256r1(Secp256r1PublicKey::from_bytes(bytes).unwrap())
+            }
+            SignatureScheme::BLS12381 => todo!(),
+        }
     }
 }
 

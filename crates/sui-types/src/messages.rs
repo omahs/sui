@@ -15,6 +15,8 @@ use crate::message_envelope::{Envelope, Message, TrustedEnvelope, VerifiedEnvelo
 use crate::messages_checkpoint::{
     AuthenticatedCheckpoint, CheckpointSequenceNumber, CheckpointSignatureMessage,
 };
+use crate::multisig::AuthenticatorTrait;
+use crate::multisig::GenericSignature;
 use crate::object::{MoveObject, Object, ObjectFormatOptions, Owner, PACKAGE_VERSION};
 use crate::storage::{DeleteKind, WriteKind};
 use crate::{SUI_SYSTEM_STATE_OBJECT_ID, SUI_SYSTEM_STATE_OBJECT_SHARED_VERSION};
@@ -829,11 +831,11 @@ impl TransactionData {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct SenderSignedData {
     pub intent_message: IntentMessage<TransactionData>,
-    pub tx_signature: Signature,
+    pub tx_signature: GenericSignature,
 }
 
 impl SenderSignedData {
-    pub fn new(tx_data: TransactionData, intent: Intent, tx_signature: Signature) -> Self {
+    pub fn new(tx_data: TransactionData, intent: Intent, tx_signature: GenericSignature) -> Self {
         Self {
             intent_message: IntentMessage::new(intent, tx_data),
             tx_signature,
@@ -853,7 +855,7 @@ impl Message for SenderSignedData {
             return Ok(());
         }
         self.tx_signature
-            .verify_secure(&self.intent_message, self.intent_message.value.sender)
+            .verify_secure_generic(&self.intent_message, self.intent_message.value.sender)
     }
 }
 
@@ -918,31 +920,39 @@ impl Transaction {
         let intent1 = intent.clone();
         let intent_msg = IntentMessage::new(intent, data);
         let signature = Signature::new_secure(&intent_msg, signer);
-        Self::new(SenderSignedData::new(data1, intent1, signature))
+        Self::new(SenderSignedData::new(data1, intent1, signature.into()))
     }
 
     pub fn from_data(data: TransactionData, intent: Intent, signature: Signature) -> Self {
-        Self::new(SenderSignedData::new(data, intent, signature))
+        Self::new(SenderSignedData::new(data, intent, signature.into()))
     }
 
     // TODO(joyqvq): remove and prefer to_tx_bytes_and_signature()
     pub fn to_network_data_for_execution(&self) -> (Base64, SignatureScheme, Base64, Base64) {
+        let s = match &self.tx_signature {
+            GenericSignature::Signature(s) => s,
+            _ => panic!("unexpected signature scheme"),
+        };
         (
             Base64::from_bytes(
                 bcs::to_bytes(&self.intent_message.value)
                     .unwrap()
                     .as_slice(),
             ),
-            self.tx_signature.scheme(),
-            Base64::from_bytes(self.tx_signature.signature_bytes()),
-            Base64::from_bytes(self.tx_signature.public_key_bytes()),
+            s.scheme(),
+            Base64::from_bytes(s.signature_bytes()),
+            Base64::from_bytes(s.public_key_bytes()),
         )
     }
 
     pub fn to_tx_bytes_and_signature(&self) -> (Base64, Base64) {
+        let s = match &self.data().tx_signature {
+            GenericSignature::Signature(s) => s,
+            _ => panic!("unexpected signature scheme"),
+        };
         (
             Base64::from_bytes(&bcs::to_bytes(&self.data().intent_message.value).unwrap()),
-            Base64::from_bytes(self.data().tx_signature.as_ref()),
+            Base64::from_bytes(s.as_ref()),
         )
     }
 }
@@ -971,9 +981,13 @@ impl VerifiedTransaction {
             // Default intent
             intent_message: IntentMessage::new(Intent::default(), data),
             // Arbitrary keypair
-            tx_signature: Ed25519SuiSignature::from_bytes(&[0; Ed25519SuiSignature::LENGTH])
-                .unwrap()
-                .into(),
+            tx_signature: GenericSignature::Signature(
+                Ed25519SuiSignature::from_bytes(&[0; Ed25519SuiSignature::LENGTH])
+                    .unwrap()
+                    .into(),
+            ), // tx_signature: Ed25519SuiSignature::from_bytes(&[0; Ed25519SuiSignature::LENGTH])
+               //     .unwrap()
+               //     .into().into(),
         };
         Self::new_from_verified(Transaction::new(signed_data))
     }

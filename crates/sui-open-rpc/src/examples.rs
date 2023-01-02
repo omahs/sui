@@ -28,7 +28,7 @@ use sui_types::base_types::{
     ObjectDigest, ObjectID, ObjectType, SequenceNumber, SuiAddress, TransactionDigest,
 };
 use sui_types::crypto::{
-    get_key_pair_from_rng, AccountKeyPair, AuthorityKeyPair, AuthorityPublicKeyBytes, Signature,
+    get_key_pair_from_rng, AccountKeyPair, AuthorityKeyPair, AuthorityPublicKeyBytes,
 };
 use sui_types::crypto::{AuthorityQuorumSignInfo, SuiSignature};
 use sui_types::event::EventID;
@@ -37,6 +37,7 @@ use sui_types::messages::{
     CallArg, ExecuteTransactionRequestType, MoveCall, SingleTransactionKind, TransactionData,
     TransactionKind, TransferObject,
 };
+use sui_types::multisig::GenericSignature;
 use sui_types::object::{Owner, PACKAGE_VERSION};
 use sui_types::query::EventQuery;
 use sui_types::query::TransactionQuery;
@@ -168,7 +169,10 @@ impl RpcExampleProvider {
 
     fn execute_transaction_example(&mut self) -> Examples {
         let (data, signature, _, _, result, _) = self.get_transfer_data_response();
-
+        let s = match signature {
+            GenericSignature::Signature(s) => s,
+            _ => panic!("Unexpected signature type"),
+        };
         Examples::new(
             "sui_executeTransaction",
             vec![ExamplePairing::new(
@@ -178,15 +182,9 @@ impl RpcExampleProvider {
                         "tx_bytes",
                         json!(Base64::from_bytes(bcs::to_bytes(&data).unwrap().as_slice())),
                     ),
-                    ("sig_scheme", json!(signature.scheme())),
-                    (
-                        "signature",
-                        json!(Base64::from_bytes(signature.signature_bytes())),
-                    ),
-                    (
-                        "pub_key",
-                        json!(Base64::from_bytes(signature.public_key_bytes())),
-                    ),
+                    ("sig_scheme", json!(s.scheme())),
+                    ("signature", json!(Base64::from_bytes(s.signature_bytes()))),
+                    ("pub_key", json!(Base64::from_bytes(s.public_key_bytes()))),
                     (
                         "request_type",
                         json!(ExecuteTransactionRequestType::WaitForLocalExecution),
@@ -199,6 +197,10 @@ impl RpcExampleProvider {
 
     fn execute_transaction_serialized_sig_example(&mut self) -> Examples {
         let (data, signature, _, _, result, _) = self.get_transfer_data_response();
+        let s = match signature {
+            GenericSignature::Signature(s) => s,
+            _ => panic!("Unexpected signature type"),
+        };
         let tx_bytes = TransactionBytes::from_data(data).unwrap();
 
         Examples::new(
@@ -207,7 +209,7 @@ impl RpcExampleProvider {
                 "Execute an transaction with serialized signature",
                 vec![
                     ("tx_bytes", json!(tx_bytes.tx_bytes)),
-                    ("signature", json!(Base64::from_bytes(signature.as_ref()))),
+                    ("signature", json!(Base64::from_bytes(s.as_ref()))),
                     (
                         "request_type",
                         json!(ExecuteTransactionRequestType::WaitForLocalExecution),
@@ -443,7 +445,7 @@ impl RpcExampleProvider {
         &mut self,
     ) -> (
         TransactionData,
-        Signature,
+        GenericSignature,
         SuiAddress,
         ObjectID,
         SuiTransactionResponse,

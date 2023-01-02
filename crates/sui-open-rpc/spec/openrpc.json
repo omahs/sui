@@ -2667,7 +2667,7 @@
             "description": "tx_signature is signed by the transaction sender, committing to the intent message containing the transaction data and intent.",
             "allOf": [
               {
-                "$ref": "#/components/schemas/Signature"
+                "$ref": "#/components/schemas/GenericSignature"
               }
             ]
           }
@@ -2766,6 +2766,58 @@
             "minimum": 0.0
           }
         }
+      },
+      "CompressedSignature": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "Ed25519"
+            ],
+            "properties": {
+              "Ed25519": {
+                "$ref": "#/components/schemas/Base64"
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": [
+              "Secp256k1"
+            ],
+            "properties": {
+              "Secp256k1": {
+                "$ref": "#/components/schemas/Base64"
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": [
+              "Secp256r1"
+            ],
+            "properties": {
+              "Secp256r1": {
+                "$ref": "#/components/schemas/Base64"
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": [
+              "BLS12381"
+            ],
+            "properties": {
+              "BLS12381": {
+                "$ref": "#/components/schemas/Base64"
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
       },
       "Data": {
         "oneOf": [
@@ -3807,6 +3859,16 @@
           }
         }
       },
+      "GenericSignature": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/MultiSignature"
+          },
+          {
+            "$ref": "#/components/schemas/Signature"
+          }
+        ]
+      },
       "Hex": {
         "description": "Hex string encoding.",
         "type": "string"
@@ -4042,6 +4104,48 @@
             ]
           }
         ]
+      },
+      "MultiPublicKey": {
+        "type": "object",
+        "required": [
+          "pks",
+          "threshold"
+        ],
+        "properties": {
+          "pks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicKey"
+            }
+          },
+          "threshold": {
+            "type": "integer",
+            "format": "uint",
+            "minimum": 0.0
+          }
+        }
+      },
+      "MultiSignature": {
+        "type": "object",
+        "required": [
+          "bitmap",
+          "multi_pk",
+          "sigs"
+        ],
+        "properties": {
+          "bitmap": {
+            "$ref": "#/components/schemas/Base64"
+          },
+          "multi_pk": {
+            "$ref": "#/components/schemas/MultiPublicKey"
+          },
+          "sigs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CompressedSignature"
+            }
+          }
+        }
       },
       "Object": {
         "type": "object",
@@ -4519,6 +4623,46 @@
             "$ref": "#/components/schemas/Balance"
           }
         }
+      },
+      "PublicKey": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "Ed25519"
+            ],
+            "properties": {
+              "Ed25519": {
+                "$ref": "#/components/schemas/Base64"
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": [
+              "Secp256k1"
+            ],
+            "properties": {
+              "Secp256k1": {
+                "$ref": "#/components/schemas/Base64"
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": [
+              "Secp256r1"
+            ],
+            "properties": {
+              "Secp256r1": {
+                "$ref": "#/components/schemas/Base64"
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
       },
       "RPCTransactionRequestParams": {
         "oneOf": [
