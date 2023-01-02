@@ -36,7 +36,7 @@ use sui_types::base_types::{
 };
 use sui_types::coin::CoinMetadata;
 use sui_types::committee::EpochId;
-use sui_types::crypto::{AuthorityStrongQuorumSignInfo, Signature};
+use sui_types::crypto::{Signature, SuiAuthorityStrongQuorumSignInfo};
 use sui_types::dynamic_field::DynamicFieldInfo;
 use sui_types::error::{ExecutionError, SuiError};
 use sui_types::event::{BalanceChangeType, Event, EventID};
@@ -1747,7 +1747,7 @@ pub struct SuiCertifiedTransaction {
     /// tx_signature is signed by the transaction sender, committing to the intent message containing the transaction data and intent.
     pub tx_signature: Signature,
     /// authority signature information, if available, is signed by an authority, applied on `data`.
-    pub auth_sign_info: AuthorityStrongQuorumSignInfo,
+    pub auth_sign_info: SuiAuthorityStrongQuorumSignInfo,
 }
 
 impl Display for SuiCertifiedTransaction {
@@ -1775,7 +1775,7 @@ impl TryFrom<CertifiedTransaction> for SuiCertifiedTransaction {
             transaction_digest: digest,
             data: data.intent_message.value.try_into()?,
             tx_signature: data.tx_signature,
-            auth_sign_info: sig,
+            auth_sign_info: SuiAuthorityStrongQuorumSignInfo::from(&sig),
         })
     }
 }
@@ -1795,7 +1795,7 @@ pub struct SuiCertifiedTransactionEffects {
     pub transaction_effects_digest: TransactionEffectsDigest,
     pub effects: SuiTransactionEffects,
     /// authority signature information signed by the quorum of the validators.
-    pub auth_sign_info: AuthorityStrongQuorumSignInfo,
+    pub auth_sign_info: SuiAuthorityStrongQuorumSignInfo,
 }
 
 impl Display for SuiCertifiedTransactionEffects {
@@ -1826,7 +1826,7 @@ impl SuiCertifiedTransactionEffects {
         Ok(Self {
             transaction_effects_digest: digest,
             effects: SuiTransactionEffects::try_from(effects, resolver)?,
-            auth_sign_info,
+            auth_sign_info: SuiAuthorityStrongQuorumSignInfo::from(&auth_sign_info),
         })
     }
 }
