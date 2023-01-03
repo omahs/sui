@@ -274,6 +274,7 @@ impl ConsensusAdapter {
         lock: Option<&RwLockReadGuard<ReconfigState>>,
         epoch_store: &Arc<AuthorityPerEpochStore>,
     ) -> SuiResult<JoinHandle<()>> {
+        tracing::debug!("submit {:?}", transaction.key());
         epoch_store.insert_pending_consensus_transactions(&transaction, lock)?;
         Ok(self.submit_unchecked(transaction, epoch_store))
     }
