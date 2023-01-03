@@ -76,7 +76,6 @@ export type ValidatorLinkProps = {
     noTruncate?: boolean;
 };
 
-
 export function ValidatorLink({ address, noTruncate }: ValidatorLinkProps) {
     const truncatedObjectId = noTruncate ? address : formatAddress(address);
     return (
