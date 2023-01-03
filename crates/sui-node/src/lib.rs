@@ -628,7 +628,6 @@ impl SuiNode {
                 if self.state.is_validator() {
                     // Only restart Narwhal if this node is still a validator.
                     let narwhal_committee = system_state.get_current_epoch_narwhal_committee();
-
                     let transactions_addr = &self
                         .config
                         .consensus_config
@@ -644,6 +643,11 @@ impl SuiNode {
                         self.state.db(),
                         self.state.metrics.clone(),
                     ));
+                    info!(
+                        "Creating Narwhal at epoch {} with committee {:?}",
+                        narwhal_committee.epoch(),
+                        narwhal_committee
+                    );
                     validator_components
                         .narwhal_manager
                         .tx_start
@@ -654,7 +658,6 @@ impl SuiNode {
                         })
                         .await?;
                     // TODO: (Laura) wait for start complete signal
-                    info!("Starting Narwhal");
                 } else {
                     info!("This node is no longer a validator after reconfiguration");
                 }
