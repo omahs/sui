@@ -97,19 +97,21 @@ impl Synchronizer {
                         "synchronizer unable to load a new enough committee: needed {epoch} but got {}",
                         committee.epoch()
                     );
-                    return Err(DagError::InvalidEpoch {
-                        expected: committee.epoch(),
-                        received: epoch,
-                    });
+                    return Err(DagError::InvalidEpoch(
+                        "genesis_for_epoch less",
+                        committee.epoch(),
+                        epoch,
+                    ));
                 }
                 self.genesis.store(Arc::new(Self::make_genesis(&committee)));
                 self.genesis_for_epoch(epoch)
             }
             Ordering::Equal => Ok(genesis_guard),
-            Ordering::Greater => Err(DagError::InvalidEpoch {
-                expected: genesis_guard.0,
-                received: epoch,
-            }),
+            Ordering::Greater => Err(DagError::InvalidEpoch(
+                "genesis_for_epoch greater",
+                genesis_guard.0,
+                epoch,
+            )),
         }
     }
 

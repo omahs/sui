@@ -310,10 +310,11 @@ impl Core {
                 header.epoch,
                 committee.epoch()
             );
-            return Err(DagError::InvalidEpoch {
-                expected: committee.epoch(),
-                received: header.epoch,
-            });
+            return Err(DagError::InvalidEpoch(
+                "propose_header",
+                committee.epoch(),
+                header.epoch,
+            ));
         }
 
         // Process the header.
@@ -658,10 +659,11 @@ impl Core {
     async fn sanitize_certificate(&mut self, certificate: &Certificate) -> DagResult<()> {
         ensure!(
             self.committee.epoch() == certificate.epoch(),
-            DagError::InvalidEpoch {
-                expected: self.committee.epoch(),
-                received: certificate.epoch()
-            }
+            DagError::InvalidEpoch(
+                "sanitize_certificate",
+                self.committee.epoch(),
+                certificate.epoch()
+            )
         );
         // Ok to drop old certificate, because it will never be included into the consensus dag.
         ensure!(

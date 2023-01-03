@@ -241,10 +241,7 @@ impl Header {
         // Ensure the header is from the correct epoch.
         ensure!(
             self.epoch == committee.epoch(),
-            DagError::InvalidEpoch {
-                expected: committee.epoch(),
-                received: self.epoch
-            }
+            DagError::InvalidEpoch("Header verify", committee.epoch(), self.epoch)
         );
 
         // Ensure the header digest is well formed.
@@ -416,10 +413,7 @@ impl Vote {
         // Ensure the header is from the correct epoch.
         ensure!(
             self.epoch == committee.epoch(),
-            DagError::InvalidEpoch {
-                expected: committee.epoch(),
-                received: self.epoch
-            }
+            DagError::InvalidEpoch("Vote verify", committee.epoch(), self.epoch)
         );
 
         // Ensure the authority has voting rights.
@@ -644,10 +638,7 @@ impl Certificate {
         // Ensure the header is from the correct epoch.
         ensure!(
             self.epoch() == committee.epoch(),
-            DagError::InvalidEpoch {
-                expected: committee.epoch(),
-                received: self.epoch()
-            }
+            DagError::InvalidEpoch("Certificate verify", committee.epoch(), self.epoch())
         );
 
         // Genesis certificates are always valid.

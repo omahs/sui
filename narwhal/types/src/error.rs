@@ -88,8 +88,8 @@ pub enum DagError {
     #[error("Vote {0} (round {1}) too old for round {2}")]
     VoteTooOld(Digest<{ crypto::DIGEST_LENGTH }>, Round, Round),
 
-    #[error("Invalid epoch (expected {expected}, received {received})")]
-    InvalidEpoch { expected: Epoch, received: Epoch },
+    #[error("Invalid epoch (expected {1}, received {2}) at {0}")]
+    InvalidEpoch(&'static str, Epoch, Epoch),
 
     #[error("Invalid round (expected {expected}, received {received})")]
     InvalidRound { expected: Round, received: Round },
