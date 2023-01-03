@@ -70,3 +70,18 @@ export function TransactionLink({
         </Link>
     );
 }
+
+export type ValidatorLinkProps = {
+    address: string;
+    noTruncate?: boolean;
+};
+
+
+export function ValidatorLink({ address, noTruncate }: ValidatorLinkProps) {
+    const truncatedObjectId = noTruncate ? address : formatAddress(address);
+    return (
+        <Link variant="mono" to={`/validator/${encodeURIComponent(address)}`}>
+            {truncatedObjectId}
+        </Link>
+    );
+}
