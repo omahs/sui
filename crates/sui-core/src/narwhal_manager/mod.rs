@@ -148,7 +148,7 @@ where
     // Create a new store
     let mut store_path = config.storage_base_path.clone();
     store_path.push(format!("epoch{}", committee.epoch()));
-    let store = NodeStorage::reopen(store_path);
+    let store = NodeStorage::reopen(store_path.clone());
 
     let name = config.primary_keypair.public().clone();
 

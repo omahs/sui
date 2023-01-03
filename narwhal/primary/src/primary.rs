@@ -115,7 +115,8 @@ impl Primary {
 
         // Some info statements
         info!(
-            "Boot primary node with peer id {} and public key {}",
+            "Booting primary node at epoch {} with peer id {} and public key {}",
+            committee.load().epoch(),
             PeerId(network_signer.public().0.to_bytes()),
             name.encode_base64()
         );
