@@ -1,8 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import axios from 'axios';
-
 // NOTE: We import out of the source directory here to work around an issue with Cypress not
 // respecting tsconfig paths in the config file.
 import {
@@ -22,7 +20,7 @@ export async function createLocalnetTasks() {
             if (!keypair) {
                 throw new Error('missing keypair');
             }
-            const provider = new JsonRpcProvider('http://localhost:9000', {
+            const provider = new JsonRpcProvider('http://127.0.0.1:9000', {
                 skipDataValidation: false,
             });
             const signer = new RawSigner(
@@ -56,16 +54,21 @@ export async function createLocalnetTasks() {
             const keypair = Ed25519Keypair.generate();
             const address = keypair.getPublicKey().toSuiAddress();
             addressToKeypair.set(address, keypair);
-            const res = await axios.post<{ error: any }>(
-                'http://127.0.0.1:9123/gas',
-                { FixedAmountRequest: { recipient: address } }
-            );
-            if (res.data.error) {
-                throw new Error(
-                    'Unable to invoke local faucet.',
-                    res.data.error
-                );
+            const res = await fetch('http://127.0.0.1:9123/gas', {
+                method: 'post',
+                headers: {
+                    'content-type': 'application/json',
+                },
+                body: JSON.stringify({
+                    FixedAmountRequest: { recipient: address },
+                }),
+            });
+            const data = await res.json();
+
+            if (!res.ok || data.error) {
+                throw new Error('Unable to invoke local faucet.', data.error);
             }
+
             return address;
         },
     };
