@@ -903,6 +903,7 @@ impl PrimaryToPrimary for PrimaryReceiverHandler {
                         // Report unretriable errors as 400 Bad Request.
                         DagError::InvalidSignature
                         | DagError::InvalidHeaderDigest
+                        | DagError::InvalidEpoch(_, _, _)
                         | DagError::HeaderHasBadWorkerIds(_)
                         | DagError::HeaderHasInvalidParentRoundNumbers(_)
                         | DagError::HeaderHasDuplicateParentAuthorities(_)
