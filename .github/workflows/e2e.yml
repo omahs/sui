@@ -42,6 +42,8 @@ jobs:
           start: pnpm dev:static
           working-directory: ./apps/explorer
           spec: cypress/e2e/static/*
+          # NOTE: This works around an issue where the runner uses it's own older version of nodejs:
+          command-prefix: "--"
 
   localnet:
     name: Localnet
