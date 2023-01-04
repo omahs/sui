@@ -1,6 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import 'node-fetch';
+
 // NOTE: We import out of the source directory here to work around an issue with Cypress not
 // respecting tsconfig paths in the config file.
 import {
