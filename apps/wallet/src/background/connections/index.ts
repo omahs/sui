@@ -65,4 +65,15 @@ export class Connections {
             }
         }
     }
+
+    public notifyDappDisconnection(origin: string) {
+        for (const aConnection of this.#connections) {
+            if (
+                aConnection instanceof ContentScriptConnection &&
+                aConnection.origin === origin
+            ) {
+                console.log('notify disconnect', origin);
+            }
+        }
+    }
 }

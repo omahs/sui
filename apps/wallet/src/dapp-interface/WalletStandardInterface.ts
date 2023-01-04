@@ -96,7 +96,9 @@ export class SuiWallet implements Wallet {
             'sui_in-page',
             'sui_content-script'
         );
-
+        this.#messagesStream.messages.subscribe(({ payload }) => {
+            console.log(payload);
+        });
         this.#connected();
     }
 

@@ -39,6 +39,10 @@ Permissions.permissionReply.subscribe((permission) => {
     }
 });
 
+Permissions.on('disconnected', ({ origin }) => {
+    connections.notifyDappDisconnection(origin);
+});
+
 Keyring.on('lockedStatusUpdate', (isLocked: boolean) => {
     connections.notifyForLockedStatusUpdate(isLocked);
 });

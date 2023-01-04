@@ -35,6 +35,7 @@ export function useNextMenuUrl(isOpen: boolean, nextMenuLocation = '/') {
             searchParams.delete(MENU_PARAM);
         }
         const search = searchParams.toString();
+        console.log(pathname, `${pathname}${search ? '?' : ''}${search}`);
         return `${pathname}${search ? '?' : ''}${search}`;
     }, [isOpen, nextMenuLocation, searchParams, pathname]);
 }

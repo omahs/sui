@@ -27,6 +27,7 @@ import type {
     PermissionType,
 } from '_payloads/permissions';
 import type { Observable } from 'rxjs';
+import mitt from 'mitt';
 
 const PERMISSIONS_STORAGE_KEY = 'permissions';
 const PERMISSION_UI_URL = `${Browser.runtime.getURL('ui.html')}#/dapp/connect/`;
@@ -35,7 +36,15 @@ const PERMISSION_UI_URL_REGEX = new RegExp(
     'i'
 );
 
+type PermissionEvents = {
+    disconnected: {
+        origin: string;
+    };
+};
+
 class Permissions {
+    #events = mitt<PermissionEvents>();
+
     public static getUiUrl(permissionID: string) {
         return `${PERMISSION_UI_URL}${encodeURIComponent(permissionID)}`;
     }
@@ -235,8 +244,13 @@ class Permissions {
             await Browser.storage.local.set({
                 [PERMISSIONS_STORAGE_KEY]: allPermissions,
             });
+            this.#events.emit('disconnected', { origin });
         }
     }
+
+    public on = this.#events.on;
+
+    public off = this.#events.off;
 
     private async createPermissionRequest(
         origin: string,
