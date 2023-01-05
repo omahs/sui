@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::authority::AuthorityState;
-use crate::authority::AuthorityStore;
-use crate::epoch::committee_store::CommitteeStore;
 use crate::narwhal_manager::{
     run_narwhal_manager, NarwhalConfiguration, NarwhalManager, NarwhalStartMessage,
 };
@@ -15,7 +13,6 @@ use narwhal_worker::TrivialTransactionValidator;
 use prometheus::Registry;
 use std::sync::Arc;
 use std::time::Duration;
-use sui_config::node::AuthorityStorePruningConfig;
 use sui_types::crypto::KeypairTraits;
 use test_utils::authority::test_and_configure_authority_configs;
 use tokio::sync::mpsc::channel;
@@ -40,36 +37,14 @@ async fn test_narwhal_manager() {
     let config = configs.validator_configs()[0].clone();
     let consensus_config = config.consensus_config().unwrap();
 
-    let secret = Arc::pin(config.protocol_key_pair().copy());
     let genesis = config.genesis().unwrap();
     let genesis_committee = genesis.committee().unwrap();
-    let committee_store = Arc::new(CommitteeStore::new(
-        config.db_path().join("epochs"),
-        &genesis_committee,
-        None,
-    ));
 
-    let store = Arc::new(
-        AuthorityStore::open(
-            &config.db_path().join("store"),
-            None,
-            genesis,
-            &committee_store,
-            &AuthorityStorePruningConfig::default(),
-        )
-        .await
-        .unwrap(),
-    );
-
-    let state = AuthorityState::new(
-        config.protocol_public_key(),
-        secret,
-        store,
-        committee_store.clone(),
+    let state = AuthorityState::new_for_testing(
+        genesis_committee,
+        &Arc::pin(config.protocol_key_pair().copy()),
         None,
-        None,
-        None,
-        &registry_service.default_registry(),
+        Some(genesis),
     )
     .await;
 

@@ -96,13 +96,13 @@ pub struct ActiveAuthority<A> {
 
 impl<A> ActiveAuthority<A> {
     pub fn new(authority: Arc<AuthorityState>, net: AuthorityAggregator<A>) -> SuiResult<Self> {
-        let committee = authority.clone_committee();
-
         let net = Arc::new(net);
 
         Ok(ActiveAuthority {
             health: Arc::new(Mutex::new(
-                committee
+                authority
+                    .epoch_store()
+                    .committee()
                     .names()
                     .map(|name| (*name, AuthorityHealth::default()))
                     .collect(),
