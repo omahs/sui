@@ -29,6 +29,7 @@ use sui_types::base_types::{
 };
 use sui_types::crypto::{
     get_key_pair_from_rng, AccountKeyPair, AuthorityKeyPair, AuthorityPublicKeyBytes, Signature,
+    SuiAuthorityStrongQuorumSignInfo,
 };
 use sui_types::crypto::{AuthorityQuorumSignInfo, SuiSignature};
 use sui_types::event::EventID;
@@ -492,11 +493,11 @@ impl RpcExampleProvider {
                 transaction_digest: *tx_digest,
                 data: SuiTransactionData::try_from(data1).unwrap(),
                 tx_signature: signature.clone(),
-                auth_sign_info: AuthorityQuorumSignInfo {
+                auth_sign_info: SuiAuthorityStrongQuorumSignInfo::from(&AuthorityQuorumSignInfo {
                     epoch: 0,
                     signature: Default::default(),
                     signers_map: Default::default(),
-                },
+                }),
             },
             effects: SuiTransactionEffects {
                 status: SuiExecutionStatus::Success,
