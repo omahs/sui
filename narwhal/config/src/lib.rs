@@ -155,22 +155,12 @@ impl Parameters {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct NetworkAdminServerParameters {
     /// Primary network admin server port number
     pub primary_network_admin_server_port: u16,
     /// Worker network admin server base port number
     pub worker_network_admin_server_base_port: u16,
-}
-
-impl Default for NetworkAdminServerParameters {
-    fn default() -> Self {
-        let host = "127.0.0.1";
-        Self {
-            primary_network_admin_server_port: get_available_port(host),
-            worker_network_admin_server_base_port: get_available_port(host),
-        }
-    }
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
